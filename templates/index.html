@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Megôhmetro Industrial</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>⚡ MEGÔHMETRO ONLINE</h1>
+
+        <div class="painel">
+            <table id="tabela">
+                <tr>
+                    <th>ID</th>
+                    <th>Dispositivo</th>
+                    <th>Valor (MΩ)</th>
+                    <th>Data</th>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        async function atualizar() {
+            const res = await fetch('/dados');
+            const dados = await res.json();
+
+            let tabela = document.getElementById("tabela");
+
+            tabela.innerHTML = `
+            <tr>
+                <th>ID</th>
+                <th>Dispositivo</th>
+                <th>Valor</th>
+                <th>Data</th>
+            </tr>
+            `;
+
+            if (dados.length === 0) {
+                tabela.innerHTML += "<tr><td colspan='4'>Sem dados...</td></tr>";
+            } else {
+                dados.forEach(d => {
+                    tabela.innerHTML += `
+                    <tr>
+                        <td>${d[0]}</td>
+                        <td>${d[1]}</td>
+                        <td class="valor">${d[2]}</td>
+                        <td>${d[3]}</td>
+                    </tr>
+                    `;
+                });
+            }
+        }
+
+        setInterval(atualizar, 3000);
+        atualizar();
+    </script>
+
+</body>
+</html>
