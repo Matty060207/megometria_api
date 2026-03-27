@@ -109,7 +109,7 @@ def home():
     </head>
 
     <body>
-        <h1>📊 Megôhmetro Nuvem</h1>
+        <h1>📊 Megôhmetro Nuvem (VERSÃO NOVA 🔥)</h1>
 
         <table id="tabela">
             <tr>
