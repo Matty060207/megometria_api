@@ -1,62 +1,122 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Megôhmetro Industrial</title>
+    <title>Megôhmetro Painel</title>
     <link rel="stylesheet" href="/static/style.css">
+
+    <!-- biblioteca do gráfico -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
 
-    <div class="container">
-        <h1>⚡ MEGÔHMETRO ONLINE</h1>
+<div class="container">
 
-        <div class="painel">
-            <table id="tabela">
-                <tr>
-                    <th>ID</th>
-                    <th>Dispositivo</th>
-                    <th>Valor (MΩ)</th>
-                    <th>Data</th>
-                </tr>
-            </table>
-        </div>
+    <h1>⚡ MEGÔHMETRO INDUSTRIAL</h1>
+
+    <!-- DISPLAY GRANDE -->
+    <div class="display">
+        <span id="valor">0.00</span> MΩ
     </div>
 
-    <script>
-        async function atualizar() {
-            const res = await fetch('/dados');
-            const dados = await res.json();
+    <!-- GRÁFICO -->
+    <canvas id="grafico"></canvas>
 
-            let tabela = document.getElementById("tabela");
-
-            tabela.innerHTML = `
+    <!-- TABELA -->
+    <div class="painel">
+        <table id="tabela">
             <tr>
                 <th>ID</th>
                 <th>Dispositivo</th>
                 <th>Valor</th>
                 <th>Data</th>
             </tr>
-            `;
+        </table>
+    </div>
 
-            if (dados.length === 0) {
-                tabela.innerHTML += "<tr><td colspan='4'>Sem dados...</td></tr>";
-            } else {
-                dados.forEach(d => {
-                    tabela.innerHTML += `
-                    <tr>
-                        <td>${d[0]}</td>
-                        <td>${d[1]}</td>
-                        <td class="valor">${d[2]}</td>
-                        <td>${d[3]}</td>
-                    </tr>
-                    `;
-                });
+</div>
+
+<script>
+let grafico;
+let valores = [];
+let labels = [];
+
+function criarGrafico() {
+    const ctx = document.getElementById('grafico').getContext('2d');
+
+    grafico = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'MΩ',
+                data: valores,
+                borderColor: '#00ff00',
+                tension: 0.2
+            }]
+        },
+        options: {
+            scales: {
+                x: { display: false },
+                y: { beginAtZero: true }
             }
         }
+    });
+}
 
-        setInterval(atualizar, 3000);
-        atualizar();
-    </script>
+async function atualizar() {
+    const res = await fetch('/dados');
+    const dados = await res.json();
+
+    let tabela = document.getElementById("tabela");
+
+    tabela.innerHTML = `
+    <tr>
+        <th>ID</th>
+        <th>Dispositivo</th>
+        <th>Valor</th>
+        <th>Data</th>
+    </tr>
+    `;
+
+    if (dados.length > 0) {
+
+        let ultimo = dados[0][2];
+
+        // DISPLAY GRANDE
+        document.getElementById("valor").innerText = ultimo.toFixed(2);
+
+        // GRÁFICO
+        valores.push(ultimo);
+        labels.push("");
+
+        if (valores.length > 20) {
+            valores.shift();
+            labels.shift();
+        }
+
+        grafico.update();
+
+        // TABELA
+        dados.forEach(d => {
+            tabela.innerHTML += `
+            <tr>
+                <td>${d[0]}</td>
+                <td>${d[1]}</td>
+                <td>${d[2]}</td>
+                <td>${d[3]}</td>
+            </tr>
+            `;
+        });
+
+    } else {
+        tabela.innerHTML += "<tr><td colspan='4'>Sem dados...</td></tr>";
+    }
+}
+
+criarGrafico();
+setInterval(atualizar, 3000);
+</script>
 
 </body>
 </html>
